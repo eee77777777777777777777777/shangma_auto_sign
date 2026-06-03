@@ -11,16 +11,15 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
-    - uses: actions/checkout@v2
-
-    - name: Update README
-      run: |
-        echo "- Auto Sign-in run successful on $(date)" >> README.md
-
-    - name: Commit and push changes
-      run: |
-        git config --global user.name 'GitHub Action'
-        git config --global user.email 'action@github.com'
-        git add README.md
-        git commit -m "Update README with successful run"
-        git push
+      - uses: actions/checkout@v4
+      - name: Update README status
+        run: |
+          LAST_RUN=$(TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M')
+          sed -i "/Last sign-in/c\\u6700\u8fd1\u7b7e\u5230\uff1a${LAST_RUN} (\u5317\u4eac\u65f6\u95f4)" README.md 2>/dev/null || echo "Last sign-in: ${LAST_RUN} (Beijing time)" >> README.md
+      - name: Commit
+        run: |
+          git config user.name 'GitHub Action'
+          git config user.email 'action@github.com'
+          git add README.md
+          git diff --staged --quiet || git commit -m "Update README status"
+          git push
